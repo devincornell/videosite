@@ -1,0 +1,1 @@
+ffmpeg -i /BackupDrive/purchases/tmp/alison.mp4 -vf "thumbnail=100" -frames:v 1 allison%03d.gif
