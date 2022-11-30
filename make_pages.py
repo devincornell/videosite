@@ -5,46 +5,133 @@ import pathlib
 import doctable
 import dataclasses
 import pprint
+import subprocess
+import os
+import tqdm
+import ffmpeg
+import sys
 
 @dataclasses.dataclass
 class VidEntry:
     pass
 
-def make_files_recursive(base_path: pathlib.Path, thumb_base_path: pathlib.Path, template: jinja2.Template, page_fname: str = 'web.html', fpath: pathlib.Path = None, vid_extension: str = '.mp4', thumb_extension: str = '.gif', log_func=print):
+def make_thumb_ffmpeg(in_filename, out_filename):
+    # copied directly from here: 
+    # https://api.video/blog/tutorials/automatically-add-a-thumbnail-to-your-video-with-python-and-ffmpeg
+    
+    try:
+        probe = ffmpeg.probe(in_filename)
+    except ffmpeg._run.Error:
+        pass
+    else:
+        try:
+            time = float(probe['streams'][0]['duration']) // 2
+            width = probe['streams'][0]['width']
+            try:
+                (
+                    ffmpeg
+                    .input(in_filename, ss=time)
+                    .filter('scale', width, -1)
+                    .output(out_filename, vframes=1)
+                    .overwrite_output()
+                    .run(capture_stdout=True, capture_stderr=True)
+                )
+            except ffmpeg.Error as e:
+                print(e.stderr.decode(), file=sys.stderr)
+                pass
+        except KeyError:
+            pass
+
+
+
+def make_thumb(vid_path: pathlib.Path, thumb_path: pathlib.Path, log_func: typing.Callable[[typing.Any], None] = None) -> None:
+    command_str = f'ffmpeg -y -i "{vid_path}" -vf "thumbnail=100" -frames:v 1 "{thumb_path}"'
+
+    #with subprocess.Popen(command_str, stdout=subprocess.PIPE) as proc:
+    #    return proc.stdout.read()
+    with os.popen(command_str) as f:
+        if log_func is not None: print(f.readlines())
+
+
+def rmdir_recursive(directory: pathlib.Path):
+    for item in directory.iterdir():
+        if item.is_dir():
+            rmdir_recursive(item)
+        else:
+            item.unlink()
+    directory.rmdir()
+
+
+def make_files_recursive(
+        base_path: pathlib.Path, 
+        thumb_base_path: pathlib.Path, 
+        template: jinja2.Template, 
+        page_fname: str = 'web.html', 
+        fpath: pathlib.Path = None, # changed in recursion
+        vid_extension: str = '.mp4', 
+        thumb_extension: str = '.gif', 
+        video_height: int = 600,
+        log_func: typing.Callable[[typing.Any], None] = print,
+        clean_thumbs: bool = False,
+    ):
+    
     if fpath is None:
         fpath = base_path
+        
+        if clean_thumbs:
+            rmdir_recursive(thumb_base_path)
+            thumb_base_path.mkdir()
+        
+        
     rel_path = fpath.relative_to(base_path)
     thumb_path = thumb_base_path.joinpath(rel_path)
     rel_thumb_path = thumb_path.relative_to(base_path)
     
+    # go through videos in the current folder
     vid_info = list()
-    for vp in fpath.glob(f'*{vid_extension}'):
-
-        thumb_fname = vp.name.replace(vid_extension, thumb_extension)
+    vid_fpaths = list(fpath.glob(f'*{vid_extension}'))
+    folder_thumb = None
+    for i, vid_path in tqdm.tqdm(enumerate(vid_fpaths), total=len(vid_fpaths)):
+        thumb_fname = vid_path.name.replace(vid_extension, thumb_extension)
+        thumb_web = f'/{rel_thumb_path.joinpath(thumb_fname)}'
         thumb_abs = thumb_path.joinpath(thumb_fname)
-        thumb_abs.mkdir(parents=True, exist_ok=True)
+        thumb_abs.parent.mkdir(parents=True, exist_ok=True)
+        
+        # actually make thumbnail
+        make_thumb_ffmpeg(str(vid_path), str(thumb_abs))
 
+        # keep this for use in template rendering
         vid_info.append({
-            'vid_web': vp.name,
-            'vid_title': vp.name.replace('_', ' '),
-            'thumb_web': f'/{rel_thumb_path.joinpath(thumb_fname)}',
+            'vid_web': vid_path.name,
+            'vid_title': vid_path.stem.replace('_', ' '),
+            'thumb_web': thumb_web,
         })
+        
+        if i == 0:
+            folder_thumb = thumb_web
     
-    
+    # go through subdirectories
     child_paths = list()
-    for child_path in fpath.iterdir():
+    subfolder_thumb = None
+    for i, child_path in enumerate(fpath.iterdir()):
         if child_path.is_dir() and not child_path.is_relative_to(thumb_base_path):
-            make_files_recursive(base_path, thumb_base_path, template, page_fname=page_fname, fpath=child_path, vid_extension=vid_extension, thumb_extension=thumb_extension, log_func=log_func)
+            subfolder_thumb = make_files_recursive(base_path, thumb_base_path, template, page_fname=page_fname, fpath=child_path, vid_extension=vid_extension, thumb_extension=thumb_extension, log_func=log_func)
             subfolder = str(child_path.relative_to(fpath).joinpath(page_fname))
-            child_paths.append({'subfolder': subfolder, 'name': str(child_path).replace('_', ' ')})
+            child_paths.append({'subfolder': subfolder, 'path': str(child_path).replace('_', ' '), 'name': str(child_path.name).replace('_', ' '), 'subfolder_thumb': subfolder_thumb})
+            
+            if folder_thumb is None and len(child_paths) == 1:
+                folder_thumb = subfolder_thumb
 
-    html_str = template.render(vid_info = vid_info, child_paths=child_paths)
+    # render the template
+    html_str = template.render(vid_info=vid_info, child_paths=child_paths, video_height=video_height, name=fpath.stem)
 
     html_path = fpath.joinpath(page_fname)
-    if log_func is not None: log_func(f'saving {len(vid_info)} vids to {html_path}')
+    if log_func is not None: log_func(f'\nsaving {len(vid_info)} vids to {html_path}')
     with html_path.open('w') as f:
         f.write(html_str)
 
+    return folder_thumb
+    
 
 
 
