@@ -1,0 +1,3 @@
+#ffmpeg -y -i "/BackupDrive/purchases/users/honey_luau/RealityKings - Money Talks - (Honey Luau, Jmac) - Candy Pant.mp4" -vf "thumbnail=100" -frames:v 1 "/BackupDrive/purchases/tmp/thumbs/users/honey_luau/RealityKings - Money Talks - (Honey Luau, Jmac) - Candy Pant.gif"
+#/BackupDrive/purchases/tmp/thumbs/users/honey_luau/RealityKings - Money Talks - (Honey Luau, Jmac) - Candy Pant.gif, /BackupDrive/purchases/users/honey_luau/RealityKings - Money Talks - (Honey Luau, Jmac) - Candy Pant.mp4
+ffmpeg -y -i "/BackupDrive/purchases/art/blckd/blkd_Emily_Eliza.mp4" -vf "thumbnail=100" -frames:v 1 "/BackupDrive/purchases/tmp/thumbs/art/blckd/blkd_Emily_Eliza.gif"
