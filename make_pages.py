@@ -10,47 +10,11 @@ import os
 import tqdm
 import ffmpeg
 import sys
+import videotools
 
 @dataclasses.dataclass
 class VidEntry:
     pass
-
-def make_thumb_ffmpeg(in_filename, out_filename):
-    # copied directly from here: 
-    # https://api.video/blog/tutorials/automatically-add-a-thumbnail-to-your-video-with-python-and-ffmpeg
-    
-    try:
-        probe = ffmpeg.probe(in_filename)
-    except ffmpeg._run.Error:
-        pass
-    else:
-        try:
-            time = float(probe['streams'][0]['duration']) // 2
-            width = probe['streams'][0]['width']
-            try:
-                (
-                    ffmpeg
-                    .input(in_filename, ss=time)
-                    .filter('scale', width, -1)
-                    .output(out_filename, vframes=1)
-                    .overwrite_output()
-                    .run(capture_stdout=True, capture_stderr=True)
-                )
-            except ffmpeg.Error as e:
-                print(e.stderr.decode(), file=sys.stderr)
-                pass
-        except KeyError:
-            pass
-
-
-
-def make_thumb(vid_path: pathlib.Path, thumb_path: pathlib.Path, log_func: typing.Callable[[typing.Any], None] = None) -> None:
-    command_str = f'ffmpeg -y -i "{vid_path}" -vf "thumbnail=100" -frames:v 1 "{thumb_path}"'
-
-    #with subprocess.Popen(command_str, stdout=subprocess.PIPE) as proc:
-    #    return proc.stdout.read()
-    with os.popen(command_str) as f:
-        if log_func is not None: print(f.readlines())
 
 
 def rmdir_recursive(directory: pathlib.Path):
@@ -70,7 +34,7 @@ def make_files_recursive(
         fpath: pathlib.Path = None, # changed in recursion
         vid_extension: str = '.mp4', 
         thumb_extension: str = '.gif', 
-        video_height: int = 600,
+        video_height: int = 300,
         log_func: typing.Callable[[typing.Any], None] = print,
         clean_thumbs: bool = False,
     ):
@@ -98,7 +62,7 @@ def make_files_recursive(
         thumb_abs.parent.mkdir(parents=True, exist_ok=True)
         
         # actually make thumbnail
-        make_thumb_ffmpeg(str(vid_path), str(thumb_abs))
+        videotools.make_thumb_ffmpeg(str(vid_path), str(thumb_abs))
 
         # keep this for use in template rendering
         vid_info.append({
@@ -107,7 +71,7 @@ def make_files_recursive(
             'thumb_web': thumb_web,
         })
         
-        if i == 0:
+        if folder_thumb is None and thumb_abs.is_file():
             folder_thumb = thumb_web
     
     # go through subdirectories

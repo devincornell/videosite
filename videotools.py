@@ -47,31 +47,13 @@ def make_thumb_ffmpeg(in_filename, out_filename):
 def codec_compress(input_fname: str, output_fname: str, vcodec: str = 'libx265', crf: int = 30):
     return ffmpeg_catch_errors(
         ffmpeg
-        .input(input_fname)
+        .input(input_fname, hwaccel='cuda')
         .output(output_fname, vcodec=vcodec, crf=crf)
         .overwrite_output()
     )
 
 
-if __name__ == '__main__':
-    #folder = '/BackupDrive/purchases/tmp/test/'
-    #input_folder = pathlib.Path('/BackupDrive/purchases/channels/rsc')
-    #output_folder = pathlib.Path('/DataDrive/purchases/rsc_small')
-    
-    input_folder = pathlib.Path('/DataDrive/purchases/isla_summer')
-    output_folder = pathlib.Path('/DataDrive/purchases/isla_summer_small')
-    
-    
-    fnames = list(input_folder.glob(f'*.mp4'))
-    
-    
-    
-    for fp in tqdm.tqdm(fnames):
-        out_fp = output_folder.joinpath(fp.name)
-        
-        #print(f'input: {fp}')
-        #print(f'output: {out_fp}')
-        codec_compress(str(fp), str(out_fp))
+
         
         
         
