@@ -26,14 +26,27 @@ class PathManager:
         '''Get output file from input.'''
         rel_path = path.relative_to(self.in_path)
         return self.out_path.joinpath(rel_path)
+        
+    def glob_iter(self, patterns: typing.List[str], *args, **kwargs):
+        return self.subpath_patterns(self.in_path.glob, patterns, *args, **kwargs)
     
-    def rglob_iter(self, *args, **kwargs):
-        return self.subpaths(self.in_path.rglob, *args, **kwargs)
+    def rglob_iter(self, patterns: typing.List[str], *args, **kwargs):
+        return self.subpath_patterns(self.in_path.rglob, patterns, *args, **kwargs)
     
-    def glob_iter(self, *args, **kwargs):
-        return self.subpaths(self.in_path.glob, *args, **kwargs)
+    def subpath_patterns(self, func: typing.Callable[[pathlib.Path], typing.Iterable[pathlib.Path]], patterns: typing.List[str], *args, verbose: bool = False, **kwargs) -> typing.List[typing.Tuple[pathlib.Path, pathlib.Path, pathlib.Path]]:
+        if isinstance(patterns, str):
+            raise TypeError('pattern should be a list of string patterns, not a string.')
+        
+        subpaths = list()
+        for pattern in patterns:
+            subpaths += self.subpaths(func, pattern, *args, **kwargs)
+            
+        if verbose:
+            subpaths = tqdm.tqdm(list(subpaths), ncols=80)
+        
+        return subpaths
     
-    def subpaths(self, func: typing.Callable[[pathlib.Path], typing.Iterable[pathlib.Path]], *args, make_out_folder: bool = True, verbose: bool = False, **kwargs) -> typing.List[typing.Tuple[pathlib.Path, pathlib.Path, pathlib.Path]]:
+    def subpaths(self, func: typing.Callable[[pathlib.Path], typing.Iterable[pathlib.Path]], *args, make_out_folder: bool = True, **kwargs) -> typing.List[typing.Tuple[pathlib.Path, pathlib.Path, pathlib.Path]]:
         it: typing.Iterable[pathlib.Path] = func(*args, **kwargs)
             
         subpaths = list()
@@ -42,9 +55,6 @@ class PathManager:
             if make_out_folder:
                 out_path.parent.mkdir(parents=True, exist_ok=True)
             subpaths.append((fp.relative_to(self.in_path), fp, out_path))
-        
-        if verbose:
-            subpaths = tqdm.tqdm(list(subpaths), ncols=80)
-        
+                
         return subpaths
         

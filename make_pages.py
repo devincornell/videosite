@@ -100,8 +100,8 @@ def make_files_recursive(
 
 
 if __name__ == '__main__':
-    base_path = pathlib.Path('/BackupDrive/purchases/')
-    thumb_path = pathlib.Path('/BackupDrive/purchases/tmp/thumbs')
+    base_path = pathlib.Path('/StorageDrive/purchases_uncompressed/vixen')
+    thumb_path = pathlib.Path('/StorageDrive/purchases_uncompressed/vixen/thumbs')
     #thumb_path = base_path.joinpath('tmp/thumbs/')
     
     
