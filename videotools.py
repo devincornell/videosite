@@ -15,7 +15,7 @@ def ffmpeg_catch_errors(ffmpeg_command) -> str:
         return output
 
 
-def make_thumb_ffmpeg(in_filename, out_filename):
+def make_thumb_ffmpeg(in_filename, out_filename, **kwargs):
     # copied directly from here: 
     # https://api.video/blog/tutorials/automatically-add-a-thumbnail-to-your-video-with-python-and-ffmpeg
     
@@ -32,7 +32,7 @@ def make_thumb_ffmpeg(in_filename, out_filename):
                     ffmpeg
                     .input(in_filename, ss=time)
                     .filter('scale', width, -1)
-                    .output(out_filename, vframes=1)
+                    .output(out_filename, vframes=1, **kwargs)
                     .overwrite_output()
                     .run(capture_stdout=True, capture_stderr=True)
                 )
@@ -44,10 +44,10 @@ def make_thumb_ffmpeg(in_filename, out_filename):
 
 
 
-def codec_compress(input_fname: str, output_fname: str, vcodec: str = 'libx265', crf: int = 30):
+def codec_compress(input_fname: str, output_fname: str, vcodec: str = 'libx264', crf: int = 15):
     return ffmpeg_catch_errors(
         ffmpeg
-        .input(input_fname, hwaccel='cuda')
+        .input(input_fname)
         .output(output_fname, vcodec=vcodec, crf=crf)
         .overwrite_output()
     )

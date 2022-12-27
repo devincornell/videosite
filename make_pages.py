@@ -11,6 +11,7 @@ import tqdm
 import ffmpeg
 import sys
 import videotools
+import html
 
 @dataclasses.dataclass
 class VidEntry:
@@ -34,7 +35,7 @@ def make_files_recursive(
         fpath: pathlib.Path = None, # changed in recursion
         vid_extension: str = '.mp4', 
         thumb_extension: str = '.gif', 
-        video_height: int = 300,
+        video_width: int = 300,
         log_func: typing.Callable[[typing.Any], None] = print,
         clean_thumbs: bool = False,
     ):
@@ -68,7 +69,7 @@ def make_files_recursive(
         vid_info.append({
             'vid_web': vid_path.name,
             'vid_title': vid_path.stem.replace('_', ' '),
-            'thumb_web': thumb_web,
+            'thumb_web': html.escape(thumb_web),
         })
         
         if folder_thumb is None and thumb_abs.is_file():
@@ -87,7 +88,7 @@ def make_files_recursive(
                 folder_thumb = subfolder_thumb
 
     # render the template
-    html_str = template.render(vid_info=vid_info, child_paths=child_paths, video_height=video_height, name=fpath.stem)
+    html_str = template.render(vid_info=vid_info, child_paths=child_paths, video_width=video_width, name=fpath.stem)
 
     html_path = fpath.joinpath(page_fname)
     if log_func is not None: log_func(f'\nsaving {len(vid_info)} vids to {html_path}')
@@ -100,8 +101,8 @@ def make_files_recursive(
 
 
 if __name__ == '__main__':
-    base_path = pathlib.Path('/StorageDrive/purchases/compressed')
-    thumb_path = pathlib.Path('/StorageDrive/purchases/compressed/thumbs')
+    base_path = pathlib.Path('/StorageDrive/purchases')
+    thumb_path = pathlib.Path('/StorageDrive/purchases/thumbs')
     #thumb_path = base_path.joinpath('tmp/thumbs/')
     
     

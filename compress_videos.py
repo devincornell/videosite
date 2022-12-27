@@ -5,19 +5,32 @@ import videotools
 import enum
 import dataclasses
 import typing
-import pathmanager
+import copypathmanager
 import sys
+        
+def pmanager_lookup(select: PathSelect) -> copypathmanager.CopyPathManager:
+    uncompressed_path = '/BackupDrive/uncompressed_purchases'
+    compressed_path = '/StorageDrive/purchases/compressed'
+    patterns = [f'*.mp4', f'*.mov', f'*.wmv']
+    
+    if select == PathSelect.UNCOMPRESSED:
+        pmanager = copypathmanager.CopyPathManager.from_pathnames(
+            in_path = f'{uncompressed_path}',
+            out_path = f'{compressed_path}',
+            patterns=patterns,
+        )
+    else:
+        raise ValueError(f'a pathmanager was not provided for {select}. please add this to the script.')
+    return pmanager
+        
+        
+        
         
 if __name__ == '__main__':
     
     class PathSelect(enum.Enum):
-        ALL = enum.auto()
+        UNCOMPRESSED = enum.auto()
         ISLA = enum.auto()
-        RSC = enum.auto()
-        FTV = enum.auto()
-        VIXEN = enum.auto()
-        MPOV = enum.auto()
-        
 
     #have user enter which option they want to run
     try:
@@ -33,56 +46,41 @@ if __name__ == '__main__':
         force_overwrite = False
     print(f'{select=}, {force_overwrite=}')
     
-    uncompressed_path = '/StorageDrive/purchases/uncompressed'
-    compressed_path = '/StorageDrive/purchases/compressed'
 
-    if select == PathSelect.ISLA:
-        pmanager = pathmanager.PathManager.from_pathnames(
-            in_path = f'{uncompressed_path}/isla_summer_bunkr_large',
-            out_path = f'{compressed_path}/isla_summer_bunkr_compressed',
-        )
-    elif select == PathSelect.RSC:
-        pmanager = pathmanager.PathManager.from_pathnames(
-            in_path = f'/BackupDrive/purchases/channels/rsc',
-            out_path = f'{compressed_path}/rsc_compressed',
-        )
-    elif select == PathSelect.FTV:
-        pmanager = pathmanager.PathManager.from_pathnames(
-            in_path = '/BackupDrive/purchases/channels/ftv',
-            out_path = f'{compressed_path}/ftv_compressed',
-        )
-    elif select == PathSelect.VIXEN:
-        pmanager = pathmanager.PathManager.from_pathnames(
-            in_path = f'{uncompressed_path}/vixen',
-            out_path = f'{compressed_path}/vixen_compressed',
-        )
-    elif select == PathSelect.MPOV:
-        pmanager = pathmanager.PathManager.from_pathnames(
-            in_path = f'{uncompressed_path}/mpov',
-            out_path = f'{compressed_path}/mpov_compressed',
-        )
-    elif select == PathSelect.ALL:
-        pmanager = pathmanager.PathManager.from_pathnames(
-            in_path = '/BackupDrive/purchases',
-            out_path = f'{compressed_path}/purchases_ALL_compressed',
-        )
+    pmanager = pmanager_lookup(select)
+    print(f'{pmanager.in_path=}\n{pmanager.out_path=}')
 
-    
+    print(f'identifying fnames to use')
+    use_fpaths: typing.Set[copypathmanager.PathEntry] = set()
+    for pe in pmanager.rglob_iter(verbose=False):
+        new_path = pe.new_path.with_suffix('.mp4')
+        if not new_path.is_file():
+            print(f'{pe.rel_path} does not exist and will be created')
+            use_fpaths.add(pe)
+            pass
+        else:
+            if not force_overwrite:
+                #print(f'{rp} already exists and won\'t be overwritten')
+                pass
+            else:
+                print(f'{pe.rel_path} already exists and will be overwritten')
+                use_fpaths.add(pe)
+                
+    print(f'Now compressing {len(use_fpaths)} videos.')
     
     ct = 0
-    for rp, ip, op in pmanager.rglob_iter([f'*.mp4', f'*.mov', f'*.wmv'], verbose=True):
-        new_path = op.with_suffix('.mp4')
-        #print(f'{rp}\n{ip}\n{op}\n{new_path}\n')
-        
-        if not new_path.is_file():
-            #print(f'{rp}\n{ip}\n{op}\n{new_path}\n')
-            pass
-        
+    for pe in tqdm.tqdm(use_fpaths, ncols=80):
+        new_path = pe.new_path.with_suffix('.mp4')
+
+        # add checks one more time to be sure
         if not new_path.is_file() or force_overwrite:
-            videotools.codec_compress(str(ip), str(new_path))
+            try:
+                pe.new_path.parent.mkdir(exist_ok=True, parents=True)
+            except FileExistsError:
+                pass
+
+            videotools.codec_compress(str(pe.in_path), str(new_path))
             pass
-            
-            
         ct += 1
         
     print(f'finished processing {ct} videos.')
