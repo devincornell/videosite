@@ -44,7 +44,7 @@ def make_thumb_ffmpeg(in_filename, out_filename, **kwargs):
 
 
 
-def codec_compress(input_fname: str, output_fname: str, vcodec: str = 'libx264', crf: int = 15):
+def codec_compress(input_fname: str, output_fname: str, vcodec: str = 'libx264', crf: int = 30):
     return ffmpeg_catch_errors(
         ffmpeg
         .input(input_fname)
