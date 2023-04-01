@@ -1,7 +1,8 @@
 from __future__ import annotations
 import pathlib
 import tqdm
-import videotools
+#import videotools
+import pydevin
 import enum
 import dataclasses
 import typing
@@ -10,15 +11,23 @@ import sys
         
 def pmanager_lookup(select: PathSelect) -> copypathmanager.CopyPathManager:
     uncompressed_path = '/BackupDrive/uncompressed_purchases'
-    compressed_path = '/StorageDrive/purchases/compressed'
+    storage_path = '/StorageDrive/purchases'
     patterns = [f'*.mp4', f'*.mov', f'*.wmv']
     
-    if select == PathSelect.UNCOMPRESSED:
+    if select == PathSelect.ALL:
         pmanager = copypathmanager.CopyPathManager.from_pathnames(
             in_path = f'{uncompressed_path}',
-            out_path = f'{compressed_path}',
+            out_path = f'/StorageDrive/purchases/compressed',
             patterns=patterns,
         )
+
+    elif select == PathSelect.ISLA:
+        pmanager = copypathmanager.CopyPathManager.from_pathnames(
+            in_path = f'{storage_path}/creators/isla_summer/onlyfans_from_bunkr_libx265_hvec',
+            out_path = f'{storage_path}/creators/isla_summer/converted_from_libx265',
+            patterns=patterns,
+        )
+
     else:
         raise ValueError(f'a pathmanager was not provided for {select}. please add this to the script.')
     return pmanager
@@ -29,7 +38,7 @@ def pmanager_lookup(select: PathSelect) -> copypathmanager.CopyPathManager:
 if __name__ == '__main__':
     
     class PathSelect(enum.Enum):
-        UNCOMPRESSED = enum.auto()
+        ALL = enum.auto()
         ISLA = enum.auto()
 
     #have user enter which option they want to run
@@ -54,18 +63,29 @@ if __name__ == '__main__':
     use_fpaths: typing.Set[copypathmanager.PathEntry] = set()
     for pe in pmanager.rglob_iter(verbose=False):
         new_path = pe.new_path.with_suffix('.mp4')
+        print(f'{pe.rel_path}')
         if not new_path.is_file():
-            print(f'{pe.rel_path} does not exist and will be created')
+            print(f'   does not exist and will be created')
             use_fpaths.add(pe)
             pass
         else:
             if not force_overwrite:
-                #print(f'{rp} already exists and won\'t be overwritten')
+                print(f'   exists and won\'t be overwritten')
                 pass
             else:
-                print(f'{pe.rel_path} already exists and will be overwritten')
+                print(f'   exists and will be overwritten')
                 use_fpaths.add(pe)
+            
+            old_size = pe.in_path.stat().st_size
+            new_size = new_path.stat().st_size
+            size_change = (new_size-old_size)/old_size*100
+            if new_size > old_size:
+                print(f'   WARNING: file size increased by {size_change:0.2f}%')
+            else:
+                print(f'   compression rate: {new_size/old_size*100:0.2f}%')
                 
+
+    #exit()
     print(f'Now compressing {len(use_fpaths)} videos.')
     
     ct = 0
@@ -79,7 +99,7 @@ if __name__ == '__main__':
             except FileExistsError:
                 pass
 
-            videotools.codec_compress(str(pe.in_path), str(new_path))
+            pydevin.codec_compress(str(pe.in_path), str(new_path))
             pass
         ct += 1
         

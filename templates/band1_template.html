@@ -56,23 +56,29 @@
       <div class="w3-row w3-padding-32">
         {% for cp in child_paths %}
           <div class="w3-third">
-            <a href='{{ cp.subfolder }}'>{{ cp.name }}<br/><img src="{{ cp.subfolder_thumb }}" class="w3-round w3-margin-bottom" alt="{{ cp.subfolder_thumb }}" style="width:60%"></a>
+            <a href='{{ cp.path }}'>
+              {{ cp.name }}<br/>
+              {{cp.num_vids}} videos, {{cp.num_subfolders}} folders, {{cp.files_size_str}} total<br/>
+              <img src="{{ cp.subfolder_thumb }}" class="w3-round w3-margin-bottom" alt="" style="width:95%">
+            </a>
           </div>
         {% endfor %}
       </div>
 
-      <h1>Videos</h1>
+      <h3>Videos</h3>
       <!--where the actual videos appear-->
       
       
       <div class="w3-row w3-padding-32">
         {% for vid in vid_info %}
-          <div class="w3-third">
-            <h4>{{ vid.vid_title }}</h4>
-            <video width="{{ video_width }}" poster='{{ vid.thumb_web }}' preload="none" controls>
+          <div class="w3-third" style="border-style: solid; border-width: 1px;">
+            <a href="{{vid.vid_web}}">{{ vid.vid_title }}</a><br/>
+            {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
+
+            <video width="{{ video_width }}" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
               <source src="{{ vid.vid_web }}" type="video/mp4">
               Your browser does not support the video tag.
-            </video>     
+            </video>
           </div>
         {% endfor %}
       </div>
