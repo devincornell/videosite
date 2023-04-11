@@ -18,8 +18,8 @@
   <div class="w3-top">
     <div class="w3-bar w3-black w3-card">
       <a class="w3-bar-item w3-button w3-padding-large w3-hide-medium w3-hide-large w3-right" href="javascript:void(0)" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-      <a href="/web.html" class="w3-bar-item w3-button w3-padding-large">HOME</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hide-small">?</a>
+      <a href="/web2.html" class="w3-bar-item w3-button w3-padding-large">HOME</a>
+      <a href="../web2.html" class="w3-bar-item w3-button w3-padding-large w3-hide-small">↑</a>
       <div class="w3-dropdown-hover w3-hide-small">
         <button class="w3-padding-large w3-button" title="More">Subfolders<i class="fa fa-caret-down"></i></button>     
         <div class="w3-dropdown-content w3-bar-block w3-card-4">
@@ -34,7 +34,7 @@
   
   <!-- Navbar on small screens (remove the onclick attribute if you want the navbar to always show on top of the content when clicking on the links) -->
   <div id="navDemo" class="w3-bar-block w3-black w3-hide w3-hide-large w3-hide-medium w3-top" style="margin-top:46px">
-    <a href="/web.html" class="w3-bar-item w3-button w3-padding-large" onclick="myFunction()">HOME</a>
+    <a href="/web2.html" class="w3-bar-item w3-button w3-padding-large" onclick="myFunction()">HOME</a>
   </div>
   
   <!-- Page content -->
@@ -59,18 +59,16 @@
             <a href='{{ cp.path }}'>
               {{ cp.name }}<br/>
               {{cp.num_vids}} videos, {{cp.num_subfolders}} folders, {{cp.files_size_str}} total<br/>
-              <img src="{{ cp.subfolder_thumb }}" class="w3-round w3-margin-bottom" alt="" style="width:95%">
+              <img src="{{ cp.subfolder_thumb }}" class="w3-round w3-margin-bottom" alt="" style="width:90%">
             </a>
           </div>
         {% endfor %}
       </div>
-
+      
+      <hr/>
       <h3>Videos</h3>
-      <!--where the actual videos appear-->
-      
-      
       <div class="w3-row w3-padding-32">
-        {% for vid in vid_info %}
+        {% for vid in vids %}
           <div class="w3-third" style="border-style: solid; border-width: 1px;">
             <a href="{{vid.vid_web}}">{{ vid.vid_title }}</a><br/>
             {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
@@ -83,7 +81,31 @@
         {% endfor %}
       </div>
 
+      <hr/>
+      <h3>Clips</h3>
+      <div class="w3-row w3-padding-32">
+        {% for vid in clips %}
+          <div class="w3-third" style="border-style: solid; border-width: 1px;">
+            <a href="{{vid.vid_web}}">{{ vid.vid_title }}</a><br/>
+            {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
 
+            <video width="{{ clip_width }}" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
+              <source src="{{ vid.vid_web }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        {% endfor %}
+      </div>
+
+      <hr/>
+      <h3>Images</h3>
+      <div class="w3-row w3-padding-32">
+        {% for img in imgs %}
+          <div class="w3-third" style="border-style: solid; border-width: 1px;">
+            <a href="{{img.path}}"><img src="{{img.path}}" alt="{{img.title}}" width="100%"></a>
+          </div>
+        {% endfor %}
+      </div>
       <!--
       {% for vid in vid_info %}
         <h4>{{ vid.vid_title }}</h4>

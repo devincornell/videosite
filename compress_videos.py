@@ -16,8 +16,8 @@ def pmanager_lookup(select: PathSelect) -> copypathmanager.CopyPathManager:
     
     if select == PathSelect.ALL:
         pmanager = copypathmanager.CopyPathManager.from_pathnames(
-            in_path = f'{uncompressed_path}',
-            out_path = f'/StorageDrive/purchases/compressed',
+            in_path = f'/StorageDrive/purchases/uncompressed2',
+            out_path = f'/AddStorage/newly_compressed',
             patterns=patterns,
         )
 
