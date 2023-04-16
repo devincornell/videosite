@@ -66,14 +66,27 @@
       </div>
       
       <hr/>
+      <h3>Video Thumbs</h3>
+      <div class="w3-row w3-padding-32">
+        {% for vid in vid_thumbs %}
+          <div class="w3-quarter" style="border-style: solid; border-width: 0px;">
+            <a href="#{{vid.idx}}">
+              <img src="{{ vid.thumb_web }}" title="{{ vid.vid_title }} ({{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }})" width="100%"/>  
+            </a><br/>
+          </div>
+        {% endfor %}
+      </div>
+
+
+      <hr/>
       <h3>Videos</h3>
       <div class="w3-row w3-padding-32">
         {% for vid in vids %}
-          <div class="w3-third" style="border-style: solid; border-width: 1px;">
-            <a href="{{vid.vid_web}}">{{ vid.vid_title }}</a><br/>
+          <div class="" style="border-style: solid; border-width: 0px;">
+            <a href="{{vid.vid_web}}" id="{{vid.idx}}">{{ vid.vid_title }}</a><br/>
             {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
 
-            <video width="{{ video_width }}" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
+            <video height="600px" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
               <source src="{{ vid.vid_web }}" type="video/mp4">
               Your browser does not support the video tag.
             </video>
@@ -85,7 +98,7 @@
       <h3>Clips</h3>
       <div class="w3-row w3-padding-32">
         {% for vid in clips %}
-          <div class="w3-third" style="border-style: solid; border-width: 1px;">
+          <div class="w3-half" style="border-style: solid; border-width: 1px;">
             <a href="{{vid.vid_web}}">{{ vid.vid_title }}</a><br/>
             {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
 

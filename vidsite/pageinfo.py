@@ -171,4 +171,5 @@ class PageInfo:
             'num_imgs': self.total_imgs,
             'num_subfolders': self.num_subpages,
             'files_size_str': doctable.format_memory(self.total_size),
+            'idx': fname_to_id(self.folder_fpath.name),
         }

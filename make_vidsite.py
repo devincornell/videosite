@@ -33,10 +33,12 @@ def make_files_recursive(pinfo: vidsite.PageInfo, config: vidsite.SiteConfig, ma
         make_files_recursive(sp, config, make_thumbs=make_thumbs)
 
     sp_infos = list(sorted(pinfo.subpage_info_dicts(), key=lambda pi: pi['name']))
-    vid_infos = list(sorted(pinfo.vid_info_dicts(), key=lambda vi: -vi['aspect']))
+    vid_infos = list(sorted(pinfo.vid_info_dicts(), key=lambda vi: vi['vid_title']))
+    vid_thumb_infos = list(sorted(pinfo.vid_info_dicts(), key=lambda vi: -vi['aspect']))
     img_infos = list(sorted(pinfo.img_info_dicts(), key=lambda vi: vi['title']))
 
     vids = [vi for vi in vid_infos if not vi['is_clip']]
+    vid_thumbs = [vi for vi in vid_thumb_infos if not vi['is_clip']]
     clips = [vi for vi in vid_infos if vi['is_clip']]
 
     import json
@@ -46,6 +48,7 @@ def make_files_recursive(pinfo: vidsite.PageInfo, config: vidsite.SiteConfig, ma
     
 
     html_str = config.template.render(
+        vid_thumbs = vid_thumbs,
         vids = vids, 
         clips = clips,
         imgs = img_infos,
@@ -93,7 +96,7 @@ if __name__ == '__main__':
     
     print(f'making pages')
     make_pages(
-        fpath=base_path,#.joinpath('TEMP_VIDS_LINK/'),
+        fpath=base_path,#.joinpath('zz_tmp/'),
         config=config,
         make_thumbs=True,
     )

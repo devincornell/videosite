@@ -86,5 +86,6 @@ class VidInfo(InfoBase):
             'duration': self.probe.duration,
             'duration_str': doctable.format_time(self.probe.duration),
             'res_str': f'{self.probe.res[0]}x{self.probe.res[1]}',
-            'aspect': self.probe.aspect
+            'aspect': self.probe.aspect,
+            'idx': fname_to_id(self.fpath.stem)
         }
