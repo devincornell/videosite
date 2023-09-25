@@ -14,6 +14,7 @@ import sys
 import pydevin
 import html
 import urllib.parse
+import PIL
 
 from .util import *
 from .siteconfig import SiteConfig
@@ -99,9 +100,10 @@ class PageInfo:
         return sum(v.file_size() for v in self.vid_infos) + sum(im.file_size() for im in self.img_infos)
     
     def all_vid_infos(self) -> typing.List[VidInfo]:
-        if not self.has_childs:
-            return list()
         return self.vid_infos + [vi for sp in self.subpages for vi in sp.all_vid_infos()]
+
+    def all_img_infos(self) -> typing.List[ImgInfo]:
+        return self.img_infos + [ii for sp in self.subpages for ii in sp.all_img_infos()]
 
     def make_thumbs(self, verbose: bool = False) -> None:
         vis = self.vid_infos
@@ -118,7 +120,7 @@ class PageInfo:
         for fp in cls.base_get_fpaths(fpath, extensions=extensions):
             try:
                 img_infos.append(InfoType.from_fpath(fp, config))
-            except ValueError as e:
+            except (ValueError, PIL.UnidentifiedImageError) as e:
                 pass
         return img_infos
         
@@ -148,13 +150,23 @@ class PageInfo:
     def get_best_thumb(self) -> pathlib.Path:
         vis = self.all_vid_infos()
         if len(vis) == 0:
-            return None
+            imgs = self.all_img_infos()
+            if len(imgs):
+                return imgs[0].path_rel()
+            else:
+                return None
         mvi = min(vis, key=lambda sp: abs(sp.aspect() - self.config.ideal_aspect))
-        print('-->', mvi.aspect(), abs(mvi.aspect()-self.config.ideal_aspect), [vi.aspect() for vi in vis])
+        #print('-->', mvi.aspect(), abs(mvi.aspect()-self.config.ideal_aspect), [vi.aspect() for vi in vis])
         return mvi.thumb_path_rel()
     
     def vid_info_dicts(self) -> typing.List[typing.Dict[str, str]]:
-        return [vi.info_dict() for vi in self.vid_infos]
+        infos = list()
+        for vi in self.vid_infos:
+            try:
+                infos.append(vi.info_dict())
+            except FileNotFoundError:
+                pass
+        return infos
 
     def img_info_dicts(self) -> typing.List[typing.Dict[str, str]]:
         return [ii.info_dict() for ii in self.img_infos]

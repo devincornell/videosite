@@ -12,17 +12,30 @@ import sys
 def pmanager_lookup(select: PathSelect) -> copypathmanager.CopyPathManager:
     uncompressed_path = '/BackupDrive/uncompressed_purchases'
     storage_path = '/StorageDrive/purchases'
-    patterns = [f'*.mp4', f'*.mov', f'*.wmv', f'*.mkv']
+    patterns = [f'*.mp4', f'*.mov', f'*.wmv', f'*.mkv', f'*.webm']
     
     if select == PathSelect.ALL:
         pmanager = copypathmanager.CopyPathManager.from_pathnames(
             in_path = f'/AddStorage/uncompressed',
-            out_path = f'/AddStorage/newly_compressed',
+            out_path = f'/AddStorage/compressed_unsorted',
+            patterns=patterns,
+        )
+    elif select == PathSelect.IMAGES:
+        pmanager = copypathmanager.CopyPathManager.from_pathnames(
+            in_path = f'/StorageDrive/purchases/z_photos',
+            out_path = f'/AddStorage/newly_compressed_images',
+            patterns=patterns,
+        )
+    elif select == PathSelect.WEBCAM:
+        pmanager = copypathmanager.CopyPathManager.from_pathnames(
+            in_path = f'/DataDrive/camvids/uncompressed',
+            out_path = f'/DataDrive/camvids/compressed',
             patterns=patterns,
         )
 
+
     else:
-        raise ValueError(f'a pathmanager was not provided for {select}. please add this to the script.')
+        raise ValueError(f'Invalid PathSelect entry: {select}.')
     return pmanager
         
         
@@ -32,6 +45,8 @@ if __name__ == '__main__':
     
     class PathSelect(enum.Enum):
         ALL = enum.auto()
+        IMAGES = enum.auto()
+        WEBCAM = enum.auto()
 
     #have user enter which option they want to run
     try:

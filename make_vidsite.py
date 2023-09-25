@@ -35,7 +35,7 @@ def make_files_recursive(pinfo: vidsite.PageInfo, config: vidsite.SiteConfig, ma
     sp_infos = list(sorted(pinfo.subpage_info_dicts(), key=lambda pi: pi['name']))
     vid_infos = list(sorted(pinfo.vid_info_dicts(), key=lambda vi: vi['vid_title']))
     vid_thumb_infos = list(sorted(pinfo.vid_info_dicts(), key=lambda vi: -vi['aspect']))
-    img_infos = list(sorted(pinfo.img_info_dicts(), key=lambda vi: vi['title']))
+    img_infos = list(sorted(pinfo.img_info_dicts(), key=lambda ii: ii['aspect']))
 
     vids = [vi for vi in vid_infos if not vi['is_clip']]
     vid_thumbs = [vi for vi in vid_thumb_infos if not vi['is_clip']]
@@ -85,7 +85,7 @@ if __name__ == '__main__':
         template = template,
         page_fname = 'web2.html',
         vid_extensions = ['mp4'],
-        img_extensions = ['png', 'gif', 'jpg'],
+        img_extensions = ['png', 'gif', 'jpg', 'jpeg'],
         thumb_extension = '.gif',
         video_width = '85%',
         clip_width = '100%',
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     
     print(f'making pages')
     make_pages(
-        fpath=base_path,#.joinpath('zz_tmp/'),
+        fpath=base_path,#.joinpath('z_photos/'),
         config=config,
         make_thumbs=True,
     )

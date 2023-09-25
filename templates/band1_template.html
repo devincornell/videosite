@@ -1,16 +1,20 @@
 <!DOCTYPE html>
   <html lang="en">
   <head>
-  <title>Unkown</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <style>
-  body {font-family: "Lato", sans-serif}
-  .mySlides {display: none}
-  </style>
+    <title>Unkown</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet" />
+    
+    <style>
+    body {font-family: "Lato", sans-serif}
+    .mySlides {display: none}
+    </style>
+    
   </head>
   <body>
   
@@ -65,6 +69,16 @@
         {% endfor %}
       </div>
       
+      <!--
+        (Sadly I think video.js needs to be installed locally to work)
+        <video class="video-js" height="600px" poster='#' preload="none" controls>
+        <source src="#" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      -->
+      
+
+
       <hr/>
       <h3>Video Thumbs</h3>
       <div class="w3-row w3-padding-32">
@@ -73,23 +87,6 @@
             <a href="#{{vid.idx}}">
               <img src="{{ vid.thumb_web }}" title="{{ vid.vid_title }} ({{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }})" width="100%"/>  
             </a><br/>
-          </div>
-        {% endfor %}
-      </div>
-
-
-      <hr/>
-      <h3>Videos</h3>
-      <div class="w3-row w3-padding-32">
-        {% for vid in vids %}
-          <div class="" style="border-style: solid; border-width: 0px;">
-            <a href="{{vid.vid_web}}" id="{{vid.idx}}">{{ vid.vid_title }}</a><br/>
-            {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
-
-            <video height="600px" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
-              <source src="{{ vid.vid_web }}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
           </div>
         {% endfor %}
       </div>
@@ -109,6 +106,23 @@
           </div>
         {% endfor %}
       </div>
+
+      <hr/>
+      <h3>Videos</h3>
+      <div class="w3-row w3-padding-32">
+        {% for vid in vids %}
+          <div class="" style="border-style: solid; border-width: 0px;">
+            <a href="{{vid.vid_web}}" id="{{vid.idx}}">{{ vid.vid_title }}</a><br/>
+            {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
+
+            <video class="" height="100%" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
+              <source src="{{ vid.vid_web }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        {% endfor %}
+      </div>
+
 
       <hr/>
       <h3>Images</h3>
@@ -234,22 +248,24 @@
     <p class="w3-medium">Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
   </footer>
   
+  <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
+
   <script>
-  // Automatic Slideshow - change image every 4 seconds
-  var myIndex = 0;
-  carousel();
-  
-  function carousel() {
-    var i;
-    var x = document.getElementsByClassName("mySlides");
-    for (i = 0; i < x.length; i++) {
-      x[i].style.display = "none";  
-    }
-    myIndex++;
-    if (myIndex > x.length) {myIndex = 1}    
-    x[myIndex-1].style.display = "block";  
-    setTimeout(carousel, 4000);    
-  }
+
+  var player = videojs('video');
+
+  player.playlist([{
+    sources: [{
+      src: '',
+      type: 'video/mp4'
+    }],
+    poster: ''
+  }]);
+
+  // Play through the playlist automatically.
+  player.playlist.autoadvance(0);
+
+
   
   // Used to toggle the menu on small screens when clicking on the menu button
   function myFunction() {
