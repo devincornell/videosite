@@ -26,7 +26,7 @@ from .siteconfig import SiteConfig
 class VidInfo(InfoBase):
     '''Info about a single video.'''
     fpath: pathlib.Path
-    probe: pydevin.FFProbeInfo
+    probe: pydevin.ProbeInfo
     config: SiteConfig
 
     @classmethod
@@ -34,8 +34,12 @@ class VidInfo(InfoBase):
         if not vpath.is_file():
             raise ValueError(f'The provided video path is not a file.')
         
-        probe = pydevin.ffmpeg_probe(str(vpath))
-        if probe is None or not probe.has_video:
+        #probe = pydevin.ffmpeg_probe(str(vpath))
+        try:
+            probe = pydevin.VideoFile.new(str(vpath)).probe()
+            probe.video # will error if there is no video stream
+        #if probe is None or not probe.has_video:
+        except pydevin.ProbeError:
             raise ValueError(f'This file did not have valid video.')
         return cls(vpath, probe, config)
     

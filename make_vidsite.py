@@ -42,7 +42,7 @@ def make_files_recursive(pinfo: vidsite.PageInfo, config: vidsite.SiteConfig, ma
     clips = [vi for vi in vid_infos if vi['is_clip']]
 
     import json
-    print(json.dumps(sp_infos, indent=2))
+    #print(json.dumps(sp_infos, indent=2))
     #print(json.dumps(vid_infos, indent=2))
     #print(json.dumps(img_infos, indent=2))
     
@@ -68,7 +68,7 @@ def make_files_recursive(pinfo: vidsite.PageInfo, config: vidsite.SiteConfig, ma
 if __name__ == '__main__':
 
 
-    base_path = pathlib.Path('/StorageDrive/purchases/')
+    base_path = pathlib.Path('/AddStorage/personal/dwhelper/')
     thumb_path = base_path.joinpath('_thumbs/')
 
     print('reading template')
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         thumb_base_path = thumb_path,
         template = template,
         page_fname = 'web2.html',
-        vid_extensions = ['mp4'],
+        vid_extensions = ['mp4', 'MOV', 'mov'],
         img_extensions = ['png', 'gif', 'jpg', 'jpeg'],
         thumb_extension = '.gif',
         video_width = '85%',

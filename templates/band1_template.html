@@ -115,7 +115,7 @@
             <a href="{{vid.vid_web}}" id="{{vid.idx}}">{{ vid.vid_title }}</a><br/>
             {{ vid.duration_str }}, {{ vid.vid_size_str }}, {{ vid.res_str }}<br/>
 
-            <video class="" height="100%" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
+            <video class="" width="100%" poster='{{ vid.thumb_web }}' preload="none" controls {{vid.do_autoplay}}>
               <source src="{{ vid.vid_web }}" type="video/mp4">
               Your browser does not support the video tag.
             </video>
