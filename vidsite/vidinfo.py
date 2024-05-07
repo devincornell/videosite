@@ -26,6 +26,7 @@ from .siteconfig import SiteConfig
 class VidInfo(InfoBase):
     '''Info about a single video.'''
     fpath: pathlib.Path
+    vf: pydevin.VideoFile
     probe: pydevin.ProbeInfo
     config: SiteConfig
 
@@ -34,17 +35,21 @@ class VidInfo(InfoBase):
         if not vpath.is_file():
             raise ValueError(f'The provided video path is not a file.')
         
-        #probe = pydevin.ffmpeg_probe(str(vpath))
         try:
-            probe = pydevin.VideoFile.new(str(vpath)).probe()
+            probe = pydevin.VideoFile(str(vpath)).probe()
             probe.video # will error if there is no video stream
-        #if probe is None or not probe.has_video:
         except pydevin.ProbeError:
             raise ValueError(f'This file did not have valid video.')
-        return cls(vpath, probe, config)
+        
+        return cls(
+            fpath = vpath, 
+            vf = pydevin.VideoFile(vpath),
+            probe = probe, 
+            config = config,
+        )
     
     def aspect(self) -> float:
-        return self.probe.aspect
+        return self.probe.video.width / self.probe.video.height
         
     def has_thumb(self) -> bool:
         return self.thumb_path_abs().is_file()
@@ -54,7 +59,8 @@ class VidInfo(InfoBase):
         tfp = self.thumb_path_abs()
         if not tfp.is_file(): # NOTE: delete this if trying to force write
             tfp.parent.mkdir(exist_ok=True, parents=True)
-            return pydevin.make_thumb_ffmpeg(str(self.fpath), str(tfp))
+            return self.vf.make_thumb(str(tfp))
+            #return pydevin.make_thumb_ffmpeg(str(self.fpath), str(tfp))
     
     def thumb_path_rel(self) -> pathlib.Path:
         '''Thumb path relative to base path.'''
@@ -76,20 +82,20 @@ class VidInfo(InfoBase):
     def is_clip(self) -> bool:
         return self.probe.duration <= self.config.clip_duration
     
-    def info_dict(self) -> typing.Dict[str, str]:
+    def info_dict(self) -> typing.Dict[str, str|int|bool]:
         return {
             'vid_web': parse_url(self.fpath.name),
             'vid_title': fname_to_title(self.fpath.stem),
             'thumb_web': parse_url('/'+str(self.thumb_path_rel())),
             'vid_size': self.file_size(),
-            'vid_size_str': doctable.format_memory(self.file_size()),
+            'vid_size_str': pydevin.format_memory(self.file_size()),
             
             # from ffmpeg probe
             'is_clip': self.is_clip,
             'do_autoplay': 'autoplay loop muted' if self.is_clip and self.config.do_clip_autoplay else '',
             'duration': self.probe.duration,
-            'duration_str': doctable.format_time(self.probe.duration),
-            'res_str': f'{self.probe.res[0]}x{self.probe.res[1]}',
-            'aspect': self.probe.aspect,
+            'duration_str': pydevin.format_time(self.probe.duration),
+            'res_str': f'{self.probe.video.width}x{self.probe.video.height}',
+            'aspect': self.probe.video.aspect_ratio(),
             'idx': fname_to_id(self.fpath.stem)
         }

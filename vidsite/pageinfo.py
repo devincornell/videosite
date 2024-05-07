@@ -182,6 +182,6 @@ class PageInfo:
             'num_vids': self.total_vids,
             'num_imgs': self.total_imgs,
             'num_subfolders': self.num_subpages,
-            'files_size_str': doctable.format_memory(self.total_size),
+            'files_size_str': pydevin.format_memory(self.total_size),
             'idx': fname_to_id(self.folder_fpath.name),
         }
