@@ -3,7 +3,6 @@ from __future__ import annotations
 import jinja2
 import typing
 import pathlib
-import doctable
 import dataclasses
 import pprint
 import subprocess

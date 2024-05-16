@@ -2,7 +2,6 @@
 import jinja2
 import typing
 import pathlib
-import doctable
 import dataclasses
 import pprint
 import subprocess
@@ -96,12 +95,12 @@ def make_files_recursive(
                     'vid_title': fname_to_title(vid_path.stem),
                     'thumb_web': parse_url((thumb_web)),
                     'vid_size': vid_size,
-                    'vid_size_str': doctable.format_memory(vid_size),
+                    'vid_size_str': pydevin.format_memory(vid_size),
                     
                     # from ffmpeg probe
                     'do_autoplay': 'autoplay loop muted' if probe.duration <= 120 else '',
                     'duration': probe.duration,
-                    'duration_str': doctable.format_time(probe.duration),
+                    'duration_str': pydevin.format_time(probe.duration),
                     'res_str': f'{probe.res[0]}x{probe.res[1]}',
                     'aspect': probe.aspect if has_video else None
                 })
